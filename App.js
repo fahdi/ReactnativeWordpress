@@ -1,62 +1,163 @@
-import { AppLoading } from 'expo';
-import { Asset } from 'expo-asset';
-import * as Font from 'expo-font';
-import React, { useState } from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React, {Component} from 'react';
+import {Text, View, StyleSheet, Dimensions, TouchableHighlight, Image} from 'react-native';
 
-import AppNavigator from './navigation/AppNavigator';
+const REQUEST_URL = 'http://elonmusk.quotes/wp-json/quotes/v2/get';
 
-export default function App(props) {
-  const [isLoadingComplete, setLoadingComplete] = useState(false);
+// Setting a windowSize variable to be used in the styles below.
+const windowSize = Dimensions.get('window');
 
-  if (!isLoadingComplete && !props.skipLoadingScreen) {
-    return (
-      <AppLoading
-        startAsync={loadResourcesAsync}
-        onError={handleLoadingError}
-        onFinish={() => handleFinishLoading(setLoadingComplete)}
-      />
-    );
-  } else {
+export default class ElonQuoteCards extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isLoading: true
+    };
+    this.setCard = this.setCard.bind(this);
+  }
+
+  getInitialState() {
+    return {
+      // Card is initially set to null so that the loading message shows.
+      quotes: null,
+      card: null,
+      cardIDs: null,
+      quote: null
+    };
+  }
+
+  componentDidMount() {
+    this.getAllPosts();
+  }
+
+  getAllPosts() {
+    fetch(REQUEST_URL)
+      .then((response) => response.json())
+      .then((responseData) => {
+        responseData.each
+        this.setState({
+          posts: responseData
+        });
+      })
+      .then(this.setCard)
+      .done();
+  }
+
+  getRandomQuote() {
+    let quote = this.state.posts[Math.floor(Math.random() * this.state.posts.length)];
+    if (this.state.quote == quote) {
+      quote = this.getRandomQuote();
+    } else {
+      this.setState({
+        quote: quote
+      });
+    }
+    return quote;
+  }
+
+  // This is where the magic happens!
+  // Fetches the data from the fetched results and update the application state.
+  setCard() {
+    let quote = this.getRandomQuote();
+    this.setState({
+      // Set `card` to null when loading new cards ..
+      // .. so that the loading message shows.
+      card: null,
+    });
+
+    console.log(quote)
+
+    // this.setState() will cause the new data to be applied ..
+    // .. to the UI that is created by the `render` function
+    this.setState({
+      card: {
+        pic: quote.image,
+        content: quote.content
+      }
+    });
+  }
+
+  // Instead of immediately rendering the template, we now check if there is data in the 'card' variable
+  // and render a loading view if it's empty, or the 'card' template if there is data.
+  render() {
+    if (!this.state.card) {
+      return this.renderLoadingView();
+    }
+    return this.renderCard();
+  }
+
+  // The loading view template just shows the message "Wait for it..."
+  renderLoadingView() {
     return (
       <View style={styles.container}>
-        {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-        <AppNavigator />
+        <Text style={styles.text}>
+          Loading ...
+        </Text>
       </View>
     );
   }
-}
 
-async function loadResourcesAsync() {
-  await Promise.all([
-    Asset.loadAsync([
-      require('./assets/images/robot-dev.png'),
-      require('./assets/images/robot-prod.png'),
-    ]),
-    Font.loadAsync({
-      // This is the font that we are using for our tab bar
-      ...Ionicons.font,
-      // We include SpaceMono because we use it in HomeScreen.js. Feel free to
-      // remove this if you are not using it in your app
-      'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
-    }),
-  ]);
-}
+  // This is the original render function, now renamed to renderCard, which will render our main template.
+  renderCard() {
+    let quote = this.state.card.pic;
+    return (
+      <View style={styles.container}>
 
-function handleLoadingError(error) {
-  // In this case, you might want to report the error to your error reporting
-  // service, for example Sentry
-  console.warn(error);
-}
+        <View style={styles.imageContainer}>
+          <Image style={{width: windowSize.width, height: windowSize.height}} source={{uri: this.state.card.pic}}/>
+        </View>
+        <View>
+          <Text style={styles.buttonText}>{this.state.card.content}</Text>
+        </View>
 
-function handleFinishLoading(setLoadingComplete) {
-  setLoadingComplete(true);
-}
+        <View style={styles.buttonContainer}>
+          <TouchableHighlight
+            style={styles.button}
+            underlayColor='#ccc'
+            onPress={this.setCard}
+          >
+            <Text style={styles.buttonText}>Next quote</Text>
+          </TouchableHighlight>
+        </View>
+
+      </View>
+    );
+  }
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  text: {
+    fontSize: 18,
+    paddingLeft: 20,
+    paddingRight: 20,
+    textAlign: 'center',
+    color: '#333333',
+    marginBottom: 5,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    flex: 1,
+    width: windowSize.width,
+    height: windowSize.height,
+  },
+  buttonContainer: {
+    bottom: 0,
+    flex: .1,
+    width: windowSize.width,
+    backgroundColor: '#1488BC',
+  },
+  button: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    fontSize: 30,
+    color: '#FFFFFF',
   },
 });
