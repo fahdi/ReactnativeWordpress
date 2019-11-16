@@ -106,7 +106,7 @@ export default class ElonQuoteCards extends Component {
           <Image style={{width: windowSize.width, height: windowSize.height}} source={{uri: this.state.card.pic}}/>
         </View>
         <View>
-          <Text style={styles.buttonText}>{this.state.card.content}</Text>
+          <Text style={styles.text}>{this.state.card.content}</Text>
         </View>
 
         <View style={styles.buttonContainer}>
@@ -132,12 +132,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   text: {
-    fontSize: 18,
+    fontSize: 24,
     paddingLeft: 20,
     paddingRight: 20,
     textAlign: 'center',
     color: '#333333',
     marginBottom: 5,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.8,
+    width: windowSize.width,
   },
   imageContainer: {
     alignItems: 'center',
