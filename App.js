@@ -15,6 +15,8 @@ export default class ElonQuoteCards extends Component {
     this.setCard = this.setCard.bind(this);
   }
 
+  // Possibly not a good way
+
   getInitialState() {
     return {
       // Card is initially set to null so that the loading message shows.
@@ -33,7 +35,6 @@ export default class ElonQuoteCards extends Component {
     fetch(REQUEST_URL)
       .then((response) => response.json())
       .then((responseData) => {
-        responseData.each
         this.setState({
           posts: responseData
         });
@@ -44,7 +45,7 @@ export default class ElonQuoteCards extends Component {
 
   getRandomQuote() {
     let quote = this.state.posts[Math.floor(Math.random() * this.state.posts.length)];
-    if (this.state.quote == quote) {
+    if (this.state.quote === quote) {
       quote = this.getRandomQuote();
     } else {
       this.setState({
@@ -64,7 +65,7 @@ export default class ElonQuoteCards extends Component {
       card: null,
     });
 
-    console.log(quote)
+    // console.log(quote)
 
     // this.setState() will cause the new data to be applied ..
     // .. to the UI that is created by the `render` function
@@ -98,15 +99,15 @@ export default class ElonQuoteCards extends Component {
 
   // This is the original render function, now renamed to renderCard, which will render our main template.
   renderCard() {
-    let quote = this.state.card.pic;
+    let quote = this.state.card;
     return (
       <View style={styles.container}>
 
         <View style={styles.imageContainer}>
-          <Image style={{width: windowSize.width, height: windowSize.height}} source={{uri: this.state.card.pic}}/>
+          <Image style={{width: windowSize.width, height: windowSize.height}} source={{uri: quote.pic}}/>
         </View>
         <View>
-          <Text style={styles.text}>{this.state.card.content}</Text>
+          <Text style={styles.text}>{quote.content}</Text>
         </View>
 
         <View style={styles.buttonContainer}>
